@@ -123,4 +123,60 @@ void tms_resume(const char* tag) {
 uint8_t* tms_get_cpu_backup_pointer(const uint8_t* gpu_ptr, uint64_t size) {
     return TorchMemorySaver::instance().get_cpu_backup_pointer(gpu_ptr, size);
 }
+
+// --------- Storage backend configuration APIs ---------
+
+void tms_set_storage_backend_type(const char* backend_type_str) {
+    SIMPLE_CHECK(backend_type_str != nullptr, "backend_type_str should not be null");
+
+    torch_memory_saver::StorageBackendType backend_type;
+    std::string type_str(backend_type_str);
+
+    if (type_str == "cpu" || type_str == "CPU_MEMORY") {
+        backend_type = torch_memory_saver::StorageBackendType::CPU_MEMORY;
+    } else if (type_str == "mooncake" || type_str == "MOONCAKE_STORE") {
+        backend_type = torch_memory_saver::StorageBackendType::MOONCAKE_STORE;
+    } else if (type_str == "nvme" || type_str == "NVME_DISK") {
+        backend_type = torch_memory_saver::StorageBackendType::NVME_DISK;
+    } else {
+        std::cerr << "[entrypoint] Unknown storage backend type: " << type_str << std::endl;
+        return;
+    }
+
+    TorchMemorySaver::instance().set_storage_backend_type(backend_type);
+}
+
+int tms_get_storage_backend_type() {
+    return static_cast<int>(TorchMemorySaver::instance().get_current_backend_type());
+}
+
+void tms_set_mooncake_config(
+    const char* local_hostname,
+    const char* metadata_server,
+    const char* protocol,
+    const char* master_server_addr,
+    const char* rdma_devices,
+    uint64_t global_segment_size,
+    uint64_t local_buffer_size,
+    uint64_t replica_num,
+    bool with_soft_pin,
+    bool prefer_alloc_in_same_node
+) {
+    torch_memory_saver::MooncakeConfig config;
+
+    if (local_hostname != nullptr) config.local_hostname = local_hostname;
+    if (metadata_server != nullptr) config.metadata_server = metadata_server;
+    if (protocol != nullptr) config.protocol = protocol;
+    if (master_server_addr != nullptr) config.master_server_addr = master_server_addr;
+    if (rdma_devices != nullptr) config.rdma_devices = rdma_devices;
+
+    if (global_segment_size > 0) config.global_segment_size = global_segment_size;
+    if (local_buffer_size > 0) config.local_buffer_size = local_buffer_size;
+    if (replica_num > 0) config.replica_num = replica_num;
+
+    config.with_soft_pin = with_soft_pin;
+    config.prefer_alloc_in_same_node = prefer_alloc_in_same_node;
+
+    TorchMemorySaver::instance().set_mooncake_config(config);
+}
 }

@@ -32,3 +32,19 @@ def _setup_function_signatures(cdll):
     cdll.set_memory_margin_bytes.argtypes = [ctypes.c_uint64]
     cdll.tms_get_cpu_backup_pointer.argtypes = [ctypes.POINTER(ctypes.c_uint8), ctypes.c_uint64]
     cdll.tms_get_cpu_backup_pointer.restype = ctypes.POINTER(ctypes.c_uint8)
+
+    # Storage backend configuration APIs
+    cdll.tms_set_storage_backend_type.argtypes = [ctypes.c_char_p]
+    cdll.tms_get_storage_backend_type.restype = ctypes.c_int
+    cdll.tms_set_mooncake_config.argtypes = [
+        ctypes.c_char_p,  # local_hostname
+        ctypes.c_char_p,  # metadata_server
+        ctypes.c_char_p,  # protocol
+        ctypes.c_char_p,  # master_server_addr
+        ctypes.c_char_p,  # rdma_devices
+        ctypes.c_uint64,  # global_segment_size
+        ctypes.c_uint64,  # local_buffer_size
+        ctypes.c_uint64,  # replica_num
+        ctypes.c_bool,    # with_soft_pin
+        ctypes.c_bool,    # prefer_alloc_in_same_node
+    ]
